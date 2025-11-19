@@ -27,42 +27,38 @@
         </div>
 
         <!-- ===================== SUPABASE & LEADERBOARD BRIDGE ===================== -->
-        <!-- Supabase JS SDK -->
         <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
         <script>
-            // TODO: GANTI DUA BARIS DI BAWAH INI DENGAN punyamu sendiri
-            const SUPABASE_URL = "https://YOUR_SUPABASE_URL.supabase.co";
-            const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+            const SUPABASE_URL = "https://fnmcpjsdhvugmalykeqx.supabase.co";
+            const SUPABASE_ANON_KEY =
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZubWNwanNkaHZ1Z21hbHlrZXF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM1NjMwODcsImV4cCI6MjA3OTEzOTA4N30.z0tDCx1v2Uv-bNCErhUF5syKWDMswxJt4fJ2ZJSVQwI";
 
             const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-            // Dipanggil dari Unity:
-            // Application.ExternalCall("saveScore", playerName, totalScore);
+            // Dipanggil dari Unity
             window.saveScore = async function(name, score) {
                 console.log("[Unity → JS] saveScore dipanggil:", name, score);
 
                 try {
                     const {
                         error
-                    } = await supabaseClient.from("scores").insert([{
-                        name,
-                        score
-                    }]);
+                    } = await supabaseClient
+                        .from("scores")
+                        .insert([{
+                            name,
+                            score
+                        }]);
 
                     if (error) {
-                        console.error("[Supabase] Gagal simpan score:", error);
-                        // Kalau mau kasih feedback ke Unity/UI, bisa tambahkan:
-                        // if (window.onLeaderboardSubmitError) window.onLeaderboardSubmitError(error.message);
+                        console.error("[Supabase] Error simpan score:", error);
                     } else {
                         console.log("[Supabase] Score berhasil disimpan!");
-                        // if (window.onLeaderboardSubmitSuccess) window.onLeaderboardSubmitSuccess();
                     }
-                } catch (e) {
-                    console.error("[Supabase] Unexpected error:", e);
+                } catch (err) {
+                    console.error("[Supabase] Unexpected JS error:", err);
                 }
             };
 
-            // (Optional) fungsi untuk ambil leaderboard, kalau nanti mau dipakai
             window.loadLeaderboard = async function() {
                 try {
                     const {
@@ -77,14 +73,14 @@
                         .limit(10);
 
                     if (error) {
-                        console.error("[Supabase] Gagal ambil leaderboard:", error);
+                        console.error("[Supabase] Error load leaderboard:", error);
                         return [];
                     }
 
-                    console.log("[Supabase] Leaderboard data:", data);
+                    console.log("[Supabase] Leaderboard:", data);
                     return data;
-                } catch (e) {
-                    console.error("[Supabase] Unexpected error saat load leaderboard:", e);
+                } catch (err) {
+                    console.error("[Supabase] Unexpected error:", err);
                     return [];
                 }
             };
@@ -117,10 +113,10 @@
             }
 
             var buildUrl = "Build";
-            // PASTIKAN NAMA FILE DI BAWAH SAMA DENGAN HASIL BUILD UNITY KAMU
+
+            // PENTING: Pastikan nama file ini sesuai Build kamu
             var loaderUrl = buildUrl + "/new build.loader.js";
             var config = {
-                arguments: [],
                 dataUrl: buildUrl + "/new build.data",
                 frameworkUrl: buildUrl + "/new build.framework.js",
                 codeUrl: buildUrl + "/new build.wasm",
@@ -150,7 +146,8 @@
             script.src = loaderUrl;
             script.onload = () => {
                 createUnityInstance(canvas, config, (progress) => {
-                        document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
+                        document.querySelector("#unity-progress-bar-full").style.width =
+                            100 * progress + "%";
                     })
                     .then((unityInstance) => {
                         document.querySelector("#unity-loading-bar").style.display = "none";

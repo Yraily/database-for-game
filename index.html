@@ -4,12 +4,229 @@
     <head>
         <meta charset="utf-8" />
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <title>Unity Web Player | DefensePlants</title>
+        <title>DefensePlants | Web Demo</title>
         <link rel="shortcut icon" href="TemplateData/favicon.ico" />
         <link rel="stylesheet" href="TemplateData/style.css" />
+
+        <style>
+            /* ====== Tambahan styling ringan, fokus ke game ====== */
+
+            body {
+                margin: 0;
+                padding: 0;
+                font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                    sans-serif;
+                background: radial-gradient(circle at top, #171c29 0, #050712 60%, #020308 100%);
+                color: #f5f5fb;
+            }
+
+            #unity-container {
+                margin: 0 auto;
+                margin-top: 18px;
+                margin-bottom: 18px;
+                border-radius: 18px;
+                overflow: hidden;
+                max-width: 960px;
+                box-shadow: 0 18px 48px rgba(0, 0, 0, 0.65);
+                border: 1px solid rgba(255, 255, 255, 0.06);
+                background: radial-gradient(circle at top, #2a3046, #050713 70%);
+            }
+
+            #unity-footer {
+                border-top: 1px solid rgba(255, 255, 255, 0.06);
+                background: linear-gradient(to right, #090c17, #151a2b);
+            }
+
+            /* Floating leaderboard button + panel */
+            .leaderboard-toggle {
+                position: fixed;
+                right: 16px;
+                bottom: 16px;
+                z-index: 50;
+                background: radial-gradient(circle at 30% 0, #4ade80, #16a34a 50%, #052e16);
+                color: #f9fafb;
+                border-radius: 999px;
+                border: 1px solid rgba(22, 163, 74, 0.8);
+                padding: 8px 14px;
+                font-size: 0.8rem;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                cursor: pointer;
+                box-shadow: 0 12px 30px rgba(21, 128, 61, 0.6);
+            }
+
+            .leaderboard-toggle span.icon {
+                font-size: 1.05rem;
+            }
+
+            .leaderboard-panel {
+                position: fixed;
+                right: 16px;
+                bottom: 60px;
+                width: 260px;
+                max-height: 360px;
+                z-index: 60;
+                background: radial-gradient(circle at top left, #252b45, #050716 70%);
+                border-radius: 16px;
+                border: 1px solid rgba(148, 163, 184, 0.45);
+                box-shadow: 0 20px 45px rgba(15, 23, 42, 0.85);
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+                opacity: 0;
+                transform: translateY(10px);
+                pointer-events: none;
+                transition: opacity 0.18s ease-out, transform 0.18s ease-out;
+            }
+
+            .leaderboard-panel.visible {
+                opacity: 1;
+                transform: translateY(0);
+                pointer-events: auto;
+            }
+
+            .leaderboard-header {
+                padding: 8px 10px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                border-bottom: 1px solid rgba(148, 163, 184, 0.35);
+            }
+
+            .leaderboard-header-title {
+                font-size: 0.78rem;
+                letter-spacing: 0.14em;
+                text-transform: uppercase;
+                color: #e5f4ff;
+            }
+
+            .leaderboard-close {
+                background: transparent;
+                border: none;
+                color: #9ca3af;
+                cursor: pointer;
+                font-size: 0.9rem;
+            }
+
+            .leaderboard-body {
+                padding: 8px 10px 6px;
+                overflow-y: auto;
+            }
+
+            .leaderboard-list {
+                list-style: none;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            .leaderboard-item {
+                display: grid;
+                grid-template-columns: 22px 1fr auto;
+                align-items: center;
+                gap: 6px;
+                padding: 4px 6px;
+                border-radius: 999px;
+                background: radial-gradient(circle at top left, #1f2937, #020617 70%);
+                border: 1px solid rgba(55, 65, 81, 0.7);
+                font-size: 0.76rem;
+            }
+
+            .leaderboard-rank {
+                width: 20px;
+                height: 20px;
+                border-radius: 999px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.68rem;
+                color: #e5e7eb;
+                background: rgba(15, 23, 42, 0.9);
+                border: 1px solid rgba(148, 163, 184, 0.8);
+            }
+
+            .leaderboard-rank.top1 {
+                background: radial-gradient(circle at 30% 20%, #fde68a, #facc15 60%, #92400e);
+                border: none;
+                color: #111827;
+            }
+
+            .leaderboard-rank.top2 {
+                background: radial-gradient(circle at 30% 20%, #e5e7eb, #9ca3af 60%, #111827);
+                border: none;
+                color: #020617;
+            }
+
+            .leaderboard-rank.top3 {
+                background: radial-gradient(circle at 30% 20%, #fed7aa, #fb923c 60%, #7c2d12);
+                border: none;
+                color: #111827;
+            }
+
+            .leaderboard-name {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .leaderboard-score {
+                font-weight: 600;
+                color: #bef264;
+                font-size: 0.76rem;
+            }
+
+            .leaderboard-empty {
+                font-size: 0.76rem;
+                opacity: 0.7;
+                text-align: center;
+                padding: 8px 4px;
+            }
+
+            .leaderboard-footer {
+                border-top: 1px solid rgba(148, 163, 184, 0.35);
+                padding: 6px 10px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-size: 0.68rem;
+                opacity: 0.75;
+            }
+
+            .leaderboard-refresh {
+                border-radius: 999px;
+                padding: 3px 8px;
+                border: 1px solid rgba(148, 163, 184, 0.9);
+                background: transparent;
+                color: #e5e7eb;
+                cursor: pointer;
+                font-size: 0.7rem;
+            }
+
+            @media (max-width: 768px) {
+                #unity-container {
+                    margin-top: 8px;
+                    border-radius: 12px;
+                }
+
+                .leaderboard-panel {
+                    right: 10px;
+                    bottom: 52px;
+                }
+
+                .leaderboard-toggle {
+                    right: 10px;
+                    bottom: 10px;
+                }
+            }
+
+        </style>
     </head>
 
     <body>
+        <!-- UNITY CONTAINER -->
         <div id="unity-container" class="unity-desktop">
             <canvas id="unity-canvas" width="960" height="600" tabindex="-1"></canvas>
             <div id="unity-loading-bar">
@@ -26,6 +243,34 @@
             </div>
         </div>
 
+        <!-- FLOATING LEADERBOARD BUTTON -->
+        <div class="leaderboard-toggle" id="leaderboard-toggle">
+            <span class="icon">🏆</span>
+            <span>Leaderboard</span>
+        </div>
+
+        <!-- FLOATING LEADERBOARD PANEL -->
+        <div class="leaderboard-panel" id="leaderboard-panel">
+            <div class="leaderboard-header">
+                <div class="leaderboard-header-title">TOP SCORES</div>
+                <button class="leaderboard-close" id="leaderboard-close" aria-label="Close">
+                    ✕
+                </button>
+            </div>
+            <div class="leaderboard-body">
+                <div class="leaderboard-empty" id="leaderboard-empty">
+                    Belum ada data score.<br />Menangkan satu stage untuk masuk leaderboard ✨
+                </div>
+                <ul class="leaderboard-list" id="leaderboard-list"></ul>
+            </div>
+            <div class="leaderboard-footer">
+                <span id="leaderboard-status">Terakhir dibaca: -</span>
+                <button class="leaderboard-refresh" id="leaderboard-refresh">
+                    Refresh
+                </button>
+            </div>
+        </div>
+
         <!-- ===================== SUPABASE & LEADERBOARD BRIDGE ===================== -->
         <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
         <script>
@@ -35,7 +280,8 @@
 
             const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-            // Dipanggil dari Unity
+            // === Dipanggil dari Unity ===
+            // Application.ExternalCall("saveScore", playerName, totalScore);
             window.saveScore = async function(name, score) {
                 console.log("[Unity → JS] saveScore dipanggil:", name, score);
 
@@ -53,13 +299,21 @@
                         console.error("[Supabase] Error simpan score:", error);
                     } else {
                         console.log("[Supabase] Score berhasil disimpan!");
+                        // auto-refresh leaderboard kalau panel terbuka
+                        if (
+                            document
+                            .getElementById("leaderboard-panel")
+                            .classList.contains("visible")
+                        ) {
+                            loadAndRenderLeaderboard();
+                        }
                     }
                 } catch (err) {
                     console.error("[Supabase] Unexpected JS error:", err);
                 }
             };
 
-            window.loadLeaderboard = async function() {
+            async function loadLeaderboard() {
                 try {
                     const {
                         data,
@@ -77,13 +331,89 @@
                         return [];
                     }
 
-                    console.log("[Supabase] Leaderboard:", data);
-                    return data;
+                    return data || [];
                 } catch (err) {
                     console.error("[Supabase] Unexpected error:", err);
                     return [];
                 }
-            };
+            }
+
+            async function loadAndRenderLeaderboard() {
+                const listEl = document.getElementById("leaderboard-list");
+                const emptyEl = document.getElementById("leaderboard-empty");
+                const statusEl = document.getElementById("leaderboard-status");
+
+                if (!listEl) return;
+
+                const data = await loadLeaderboard();
+
+                listEl.innerHTML = "";
+
+                if (!data || data.length === 0) {
+                    emptyEl.style.display = "block";
+                } else {
+                    emptyEl.style.display = "none";
+
+                    data.forEach((row, index) => {
+                        const li = document.createElement("li");
+                        li.className = "leaderboard-item";
+
+                        const rank = document.createElement("div");
+                        rank.className = "leaderboard-rank";
+                        if (index === 0) rank.classList.add("top1");
+                        if (index === 1) rank.classList.add("top2");
+                        if (index === 2) rank.classList.add("top3");
+                        rank.textContent = index + 1;
+
+                        const name = document.createElement("div");
+                        name.className = "leaderboard-name";
+                        name.textContent = row.name || "Unknown";
+
+                        const score = document.createElement("div");
+                        score.className = "leaderboard-score";
+                        score.textContent = row.score ? ? 0;
+
+                        li.appendChild(rank);
+                        li.appendChild(name);
+                        li.appendChild(score);
+                        listEl.appendChild(li);
+                    });
+                }
+
+                if (statusEl) {
+                    const now = new Date();
+                    statusEl.textContent =
+                        "Terakhir dibaca: " +
+                        now.toLocaleTimeString("id-ID", {
+                            hour: "2-digit",
+                            minute: "2-digit"
+                        });
+                }
+            }
+
+            // Toggle panel
+            const toggleBtn = document.getElementById("leaderboard-toggle");
+            const panelEl = document.getElementById("leaderboard-panel");
+            const closeBtn = document.getElementById("leaderboard-close");
+            const refreshBtn = document.getElementById("leaderboard-refresh");
+
+            toggleBtn.addEventListener("click", () => {
+                const isVisible = panelEl.classList.contains("visible");
+                if (!isVisible) {
+                    panelEl.classList.add("visible");
+                    loadAndRenderLeaderboard();
+                } else {
+                    panelEl.classList.remove("visible");
+                }
+            });
+
+            closeBtn.addEventListener("click", () => {
+                panelEl.classList.remove("visible");
+            });
+
+            refreshBtn.addEventListener("click", () => {
+                loadAndRenderLeaderboard();
+            });
 
         </script>
         <!-- ======================================================================== -->
@@ -96,7 +426,9 @@
                 var warningBanner = document.querySelector("#unity-warning");
 
                 function updateBannerVisibility() {
-                    warningBanner.style.display = warningBanner.children.length ? "block" : "none";
+                    warningBanner.style.display = warningBanner.children.length ?
+                        "block" :
+                        "none";
                 }
                 var div = document.createElement("div");
                 div.innerHTML = msg;
@@ -113,8 +445,7 @@
             }
 
             var buildUrl = "Build";
-
-            // PENTING: Pastikan nama file ini sesuai Build kamu
+            // PENTING: samakan dengan nama file build kamu
             var loaderUrl = buildUrl + "/new build.loader.js";
             var config = {
                 dataUrl: buildUrl + "/new build.data",
